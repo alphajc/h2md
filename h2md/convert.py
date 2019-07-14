@@ -1,0 +1,145 @@
+#!/usr/bin/env python
+
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements. See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership. The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License. You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+import re
+from bs4 import NavigableString, BeautifulSoup as bs
+
+# inline_tags = ['a', 'img', 'b', 'strong', 'em', 'i', 'code', 'del']
+# block_tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'hr', 'blockquote', 'pre']
+
+block_map = {
+    'normal': {
+        'h1': '\n# {}\n',
+        'h2': '\n## {}\n',
+        'h3': '\n### {}\n',
+        'h4': '\n#### {}\n',
+        'h5': '\n##### {}\n',
+        'h6': '\n###### {}\n',
+        'hr': '\n\n---\n'
+    },
+    'intent': {
+        'p': '{}',
+        'blockquote': '> {}',
+        'pre': '```{}\n{}\n```'
+    }
+}
+
+inline_map = {
+    'normal': {
+        'i': '*{}*',
+        'em': '*{}*',
+        'b': '**{}**',
+        'strong': '**{}**',
+        'del': '~~{}~~',
+        "code": '`{}`'
+    },
+    'link': {
+        'a': '[{}]({})',
+        'img': '![{}]({})'
+    }
+}
+
+def convert(html):
+    soup = bs(html, 'html.parser')
+    container = soup.select_one('article .post-container') \
+        or soup.select_one('article #content') \
+        or soup.select_one('article') \
+        or soup.select_one('body') \
+        or soup
+    return __print_tree(container)
+
+def __print_tree(ele, intent = 0, md = ''):
+    """递归遍历DOM，为了开发时间暂时就用递归了
+    
+    Arguments:
+        ele {bs} -- 待解析元素
+    
+    Keyword Arguments:
+        intent {int} -- 缩进值 (default: {0})
+        md {str} -- 转换后的文档 (default: {''})
+    
+    Returns:
+        str -- 转换后的文档
+    """
+    if isinstance(ele, NavigableString):
+        md = __transform_text(ele, md)
+    elif ele.name == 'img':
+        md = __transform_img(ele, md)
+    elif ele.name == 'a':
+        md = __transform_a(ele, md, intent)
+    elif ele.name in inline_map['normal'].keys():
+        md = __transform_inline_tags(ele, md, intent)
+    elif ele.name == 'pre':
+        md =  __transform_pre(ele, md, intent)
+    elif ele.name in block_map['normal'].keys():
+        md = __transform_block_normal_tags(ele, md, intent)
+    else:
+        for child in ele.children:
+            md = __print_tree(child, intent, md)
+        
+        if ele.name in block_map['intent'].keys():
+            md += ('\n' + ' ' * intent + block_map['intent'][ele.name] + '\n').format(md)
+        
+        intent = intent + 4
+
+    return md
+    
+def __transform_text(ele, md):
+    text = ele.string.replace('\n', '')
+    md += text if ele.next_sibling and ele.next_sibling.name in inline_map['normal'].keys() else text.strip(' ')
+
+    return md
+
+def __transform_img(ele, md):
+    md += inline_map['link']['img'].format(ele.get('alt') or '', ele.get('src') or '')
+
+    return md
+
+def __transform_a(ele, md, intent):
+    a_inner = ''
+    for child in ele.children:
+        a_inner = __print_tree(child, intent, a_inner)
+    md += inline_map['link']['a'].format(a_inner, ele.get('href') or ele.get_text(strip=True))
+
+    return md
+
+def __transform_pre(ele, md, intent):
+    lang_tag = ele.find(class_='hljs')
+    if lang_tag: lang_tag['class'].remove('hljs')
+    lang = ''.join(lang_tag['class']) if lang_tag else ''
+    md += '\n```{}\n{}\n```\n'.format(lang, ele.text.strip().replace('\n', '\n' + ' ' * intent))
+    
+    return md
+
+def __transform_inline_tags(ele, md, intent):
+    inline_tag_inner = ''
+    for child in ele.children:
+        inline_tag_inner = __print_tree(child, intent, inline_tag_inner)
+    if inline_tag_inner:
+        md += inline_map['normal'][ele.name].format(inline_tag_inner)
+
+    return md
+
+def __transform_block_normal_tags(ele, md, intent):
+    block_tag_inner = ''
+    for child in ele.children:
+        block_tag_inner = __print_tree(child, intent, block_tag_inner)
+    md += block_map['normal'][ele.name].format(block_tag_inner)
+
+    return md
