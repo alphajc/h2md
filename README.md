@@ -9,7 +9,7 @@ pip install -U h2md
 
 ## 用法
 
-As a command line tool:
+使用命令行工具:
 
 ```sh
 # 转换一个文件
