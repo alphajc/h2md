@@ -1,5 +1,5 @@
 # h2md
-本项目目的是将html中正文部分转化为markdown文件，部分参考自 [html2md](https://github.com/davidcavazos/html2md)，我把实现方式全改了，第一个 Python 项目，希望有用。
+本项目目的是将html中正文部分转化为markdown文件，部分参考自 [html2md](https://github.com/davidcavazos/html2md)，我把实现方式全改了，第一个 Python 项目，希望能给大家带来帮助。
 
 ## 安装
 

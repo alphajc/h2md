@@ -27,10 +27,10 @@ with open('requirements.txt') as f:
 
 setup(
     name="h2md",
-    version="0.0.1",
+    version="0.1.3",
     author="Jerry Chan（陈家俊）",
     author_email="jerry@mydream.ink",
-    description="这能html中正文部分转化为markdown文件",
+    description="This will convert the content part of html into a markdown file.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/canovie/h2md",
@@ -38,7 +38,7 @@ setup(
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'h2md = src.__main__:main'
+            'h2md = h2md.__main__:main'
         ],
     },
     classifiers=[
