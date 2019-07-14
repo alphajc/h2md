@@ -43,7 +43,7 @@ class TestConvert(unittest.TestCase):
             ''
         ])
         self.assertEqual(convert(html), expected)
-    
+
     def test_code_block_with_newline(self):
         html = "Code block<pre><code><span>print('hello markdown')<span>\n<span>print('hello html')<span></code></pre>"
         expected = '\n'.join([
@@ -215,7 +215,8 @@ class TestConvert(unittest.TestCase):
             'Ordered list',
             '',
             '1. item 1',
-            '1. item 2',
+            '2. item 2',
+            ''
         ])
         self.assertEqual(convert(html), expected)
 
@@ -234,6 +235,7 @@ class TestConvert(unittest.TestCase):
             '',
             '* item 1',
             '* item 2',
+            ''
         ])
         self.assertEqual(convert(html), expected)
 
@@ -255,14 +257,18 @@ class TestConvert(unittest.TestCase):
             'Nested list',
             '',
             '1. item 1',
-            '1. item 2',
-            '   * item 2.1',
-            '   * item 2.2',
-            '     * item 2.2.1',
+            '2. item 2',
+            '',
+            '    * item 2.1',
+            '    * item 2.2',
+            '',
+            '        * item 2.2.1',
+            '',
+            '',
+            ''
         ])
         self.assertEqual(convert(html), expected)
 
-    @unittest.skip("TODO: nested tags not implemented")
     def test_nested_tags_in_lists(self):
         html = '''Nested tags in lists
         <ul>
@@ -301,6 +307,31 @@ class TestConvert(unittest.TestCase):
         </ul>
         '''
         expected = '\n'.join([
+            'Nested tags in lists',
+            '',
+            '* item',
+            '```',
+            'b',
+            '```',
+            '[text](href)![alt](src)',
+            '# H1',
+            '',
+            ' *i* *em* **b** **strong** ~~del~~ `code`',
+            '',
+            '> blockquote',
+            '> ',
+            '> > nested',
+            '',
+            '',
+            '    1. ordered list item',
+            '    2. *i* *em* **b** **strong** ~~del~~ `code`',
+            '',
+            '',
+            '    * unordered list item',
+            '    * *i* *em* **b** **strong** ~~del~~ `code`',
+            '',
+            '',
+            ''
         ])
         self.assertEqual(convert(html), expected)
 

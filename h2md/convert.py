@@ -88,17 +88,21 @@ def __print_tree(ele, intent = 0, md = ''):
         md = __transform_inline_tags(ele, md, intent)
     elif ele.name == 'pre':
         md =  __transform_pre(ele, md, intent)
+    elif ele.name in ('ul', 'ol'):
+        md = __transform_list_tags(ele, md, intent)
     elif ele.name in block_map['normal'].keys():
         md = __transform_block_normal_tags(ele, md, intent)
     elif ele.name in block_map['intent'].keys():
         md = __transform_block_intent_tags(ele, md, intent)
+    elif ele.name == '[document]':
+        md = __transform_soup(ele, md, intent)
     else:
         md = __transform_other_tags(ele, md, intent)
 
     return md
     
 def __transform_text(ele, md):
-    text = ele.string.replace('\n', '')
+    text = ele.string.replace('\n', ' ')
     md += text if ele.next_sibling and ele.next_sibling.name in inline_map['normal'].keys() else text.strip(' ')
 
     return md
@@ -157,22 +161,42 @@ def __transform_block_intent_tags(ele, md, intent):
     for child in ele.children:
         block_tag_inner = __print_tree(child, intent, block_tag_inner)
     
-    if ele.next_sibling and ele.next_sibling.name in inline_map['normal'].keys() \
-        or isinstance(ele.next_sibling, NavigableString) and ele.next_sibling.string.strip() != '':
-        tpl += '\n'
-
-    if ele.previous_sibling and ele.previous_sibling in inline_map['normal'].keys()\
-        or isinstance(ele.previous_sibling, NavigableString) and ele.previous_sibling.string.strip() != '':
-        tpl = '\n' + tpl
-    
+    tpl = __fill_newline_if_need(ele, tpl)
     md += tpl.format(prev, block_tag_inner)
-
 
     return md
 
-
 def __transform_other_tags(ele, md, intent):
+    return md
+
+def __transform_list_tags(ele, md, intent):
+    list_text = '\n'
+    if ele.find_parent(re.compile('[ou]l')): intent += 4
+    
+    line_head = '* ' if ele.name == 'ul' else '{}. '
+    for i, e in enumerate(ele.find_all('li', recursive=False)):
+        li_inner = ''
+        for child in e.children:
+            li_inner = __print_tree(child, intent, li_inner)
+        list_text += ' ' * intent + line_head.format(i + 1) + li_inner.lstrip() + '\n'
+    
+    md += __fill_newline_if_need(ele, list_text) if list_text.strip() != '' else ''
+
+    return md
+
+def __transform_soup(ele, md, intent):
     for child in ele.children:
         md = __print_tree(child, intent, md)
         
     return md
+
+def __fill_newline_if_need(ele, text):
+    if ele.next_sibling and ele.next_sibling.name in inline_map['normal'].keys() \
+        or isinstance(ele.next_sibling, NavigableString) and ele.next_sibling.string.strip() != '':
+        text += '\n'
+
+    if ele.previous_sibling and ele.previous_sibling in inline_map['normal'].keys()\
+        or isinstance(ele.previous_sibling, NavigableString) and ele.previous_sibling.string.strip() != '':
+        text = '\n' + text
+    
+    return text
