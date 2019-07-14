@@ -162,24 +162,7 @@ class TestConvert(unittest.TestCase):
             'a',
             '',
             'b',
-        ])
-        self.assertEqual(convert(html), expected)
-
-    @unittest.skip("TODO: multiline paragraphs not implemented")
-    def test_paragraph_multiline(self):
-        html = '''Paragraph<p>
-            multi
-            line
-
-            paragraph
-        </p>
-        '''
-        expected = '\n'.join([
-            'Paragraph',
-            '',
-            'multi',
-            'line',
-            'paragraph',
+            ''
         ])
         self.assertEqual(convert(html), expected)
 
@@ -189,10 +172,10 @@ class TestConvert(unittest.TestCase):
             'Quotes',
             '',
             '> blockquote',
+            ''
         ])
         self.assertEqual(convert(html), expected)
 
-    @unittest.skip("TODO: nested quotes not implemented")
     def test_quotes_nested(self):
         html = '''Nested quotes<blockquote>
         blockquote
@@ -206,9 +189,15 @@ class TestConvert(unittest.TestCase):
             'Nested quotes',
             '',
             '> blockquote',
+            '> ',
             '> > nested',
+            '> ',
             '> > nested',
+            '> > ',
             '> > > nested double',
+            '',
+            '',
+            ''
         ])
         self.assertEqual(convert(html), expected)
 

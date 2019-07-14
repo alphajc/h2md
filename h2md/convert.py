@@ -31,12 +31,13 @@ block_map = {
         'h4': '\n#### {}\n',
         'h5': '\n##### {}\n',
         'h6': '\n###### {}\n',
-        'hr': '\n\n---\n'
+        'hr': '\n\n---\n',
+        'div': '{}'
     },
     'intent': {
-        'p': '{}',
-        'blockquote': '> {}',
-        'pre': '```{}\n{}\n```'
+        'p': '\n{}{}\n',
+        'blockquote': '{}> {}',
+        'pre': '\n{}```{}\n{}\n{}```\n'
     }
 }
 
@@ -89,14 +90,10 @@ def __print_tree(ele, intent = 0, md = ''):
         md =  __transform_pre(ele, md, intent)
     elif ele.name in block_map['normal'].keys():
         md = __transform_block_normal_tags(ele, md, intent)
+    elif ele.name in block_map['intent'].keys():
+        md = __transform_block_intent_tags(ele, md, intent)
     else:
-        for child in ele.children:
-            md = __print_tree(child, intent, md)
-        
-        if ele.name in block_map['intent'].keys():
-            md += ('\n' + ' ' * intent + block_map['intent'][ele.name] + '\n').format(md)
-        
-        intent = intent + 4
+        md = __transform_other_tags(ele, md, intent)
 
     return md
     
@@ -123,7 +120,7 @@ def __transform_pre(ele, md, intent):
     lang_tag = ele.find(class_='hljs')
     if lang_tag: lang_tag['class'].remove('hljs')
     lang = ''.join(lang_tag['class']) if lang_tag else ''
-    md += '\n```{}\n{}\n```\n'.format(lang, ele.text.strip().replace('\n', '\n' + ' ' * intent))
+    md += block_map['intent']['pre'].format(' ' * intent, lang, ele.text.strip().replace('\n', '\n' + ' ' * intent), ' ' * intent)
     
     return md
 
@@ -142,4 +139,40 @@ def __transform_block_normal_tags(ele, md, intent):
         block_tag_inner = __print_tree(child, intent, block_tag_inner)
     md += block_map['normal'][ele.name].format(block_tag_inner)
 
+    return md
+
+def __transform_block_intent_tags(ele, md, intent):
+    block_tag_inner = ''
+    tpl = block_map['intent'][ele.name]
+    prev = ' ' * intent
+
+    if ele.parent.name == 'blockquote':
+        prev = ele.parent['data-prev']
+        ele['data-prev'] = ele.parent['data-prev'] + '> '
+        tpl = ele.parent['data-prev'] + '\n' + tpl + '\n'
+    elif ele.name == 'blockquote':
+        tpl = '\n' + tpl + '\n'
+        ele['data-prev'] = ' ' * intent + '> '
+
+    for child in ele.children:
+        block_tag_inner = __print_tree(child, intent, block_tag_inner)
+    
+    if ele.next_sibling and ele.next_sibling.name in inline_map['normal'].keys() \
+        or isinstance(ele.next_sibling, NavigableString) and ele.next_sibling.string.strip() != '':
+        tpl += '\n'
+
+    if ele.previous_sibling and ele.previous_sibling in inline_map['normal'].keys()\
+        or isinstance(ele.previous_sibling, NavigableString) and ele.previous_sibling.string.strip() != '':
+        tpl = '\n' + tpl
+    
+    md += tpl.format(prev, block_tag_inner)
+
+
+    return md
+
+
+def __transform_other_tags(ele, md, intent):
+    for child in ele.children:
+        md = __print_tree(child, intent, md)
+        
     return md
