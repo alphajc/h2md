@@ -335,6 +335,12 @@ class TestConvert(unittest.TestCase):
         ])
         self.assertEqual(convert(html), expected)
 
+    def test_other_tags(self):
+        html = """
+        <center>Pilot Architecture（来自<a href="https://istio.io/docs/concepts/traffic-management/">Isio官网文档</a><sup><a href="#ref01">[1]</a></sup>)</center>
+        """
+        expected = '<center>Pilot Architecture（来自[Isio官网文档](https://istio.io/docs/concepts/traffic-management/)<sup>[[1]](#ref01)</sup>)</center>'
+        self.assertEqual(convert(html), expected)
 
 if __name__ == '__main__':
     unittest.main()

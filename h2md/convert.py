@@ -169,6 +169,14 @@ def __transform_block_intent_tags(ele, md, intent):
     return md
 
 def __transform_other_tags(ele, md, intent):
+    other_inner = ''
+    for child in ele.children:
+        other_inner = __print_tree(child, intent, other_inner)
+    
+    ele.clear()
+    ele.append('{}')
+    md += ele.decode().format(other_inner)
+
     return md
 
 def __transform_list_tags(ele, md, intent):
