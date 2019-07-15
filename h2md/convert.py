@@ -20,7 +20,7 @@
 import re
 from bs4 import NavigableString, BeautifulSoup as bs
 
-# inline_tags = ['a', 'img', 'b', 'strong', 'em', 'i', 'code', 'del']
+inline_tags = ['a', 'img', 'b', 'strong', 'em', 'i', 'code', 'del']
 # block_tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'hr', 'blockquote', 'pre']
 
 block_map = {
@@ -102,8 +102,10 @@ def __print_tree(ele, intent = 0, md = ''):
     return md
     
 def __transform_text(ele, md):
-    text = ele.string.replace('\n', ' ')
-    md += text if ele.next_sibling and ele.next_sibling.name in inline_map['normal'].keys() else text.strip(' ')
+    text = re.compile(r'[\s]+').sub(' ', ele.string)
+    text = text if ele.previous_sibling and ele.previous_sibling.name in inline_tags else text.lstrip()
+    text = text if ele.next_sibling and ele.next_sibling.name in inline_tags else text.rstrip()
+    md += text
 
     return md
 
