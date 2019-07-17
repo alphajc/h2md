@@ -27,7 +27,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="h2md",
-    version="0.1.4",
+    version="1.0.0",
     author="Jerry Chan（陈家俊）",
     author_email="jerry@mydream.ink",
     description="This will convert the content part of html into a markdown file.",
