@@ -172,6 +172,11 @@ class TestConvert(unittest.TestCase):
         ])
         self.assertEqual(convert(html), expected)
 
+    def test_block_normal(self):
+        html = 'ABCD<article>EFG<section>HIJ</section></article>'
+        expected = 'EFGHIJ'
+        self.assertEqual(convert(html), expected)
+
     def test_quotes(self):
         html = 'Quotes<blockquote>blockquote</blockquote>'
         expected = '\n'.join([

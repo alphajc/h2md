@@ -45,6 +45,8 @@ print(md)
 
 最时髦的用法：
 
+> 注：使用此方法邮箱可能被保护
+
 ```bash
 curl -o- https://mydream.ink/archive/iaas-faas-serverless/ | h2md # 标准输出
 curl -o- https://mydream.ink/archive/iaas-faas-serverless/ | h2md > xx.md # 输出到 md 文件
