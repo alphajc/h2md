@@ -78,6 +78,12 @@ class TestConvert(unittest.TestCase):
         expected = 'Hyperlink [text](href)'
         self.assertEqual(convert(html), expected)
 
+    def test_hyperlinks_no_content(self):
+        html = '<a href="#href" class="class" title="title"></a>Hyperlink'
+        expected = 'Hyperlink'
+        self.assertEqual(convert(html), expected)
+
+
     def test_hyperlinks_no_href(self):
         html = 'Hyperlink <a>text</a>'
         expected = 'Hyperlink [text](text)'

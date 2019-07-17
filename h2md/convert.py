@@ -118,7 +118,9 @@ def __transform_a(ele, md, intent):
     a_inner = ''
     for child in ele.children:
         a_inner = __print_tree(child, intent, a_inner)
-    md += inline_map['link']['a'].format(a_inner, ele.get('href') or ele.get_text(strip=True))
+    
+    if a_inner != '':
+        md += inline_map['link']['a'].format(a_inner, ele.get('href') or ele.get_text(strip=True))
 
     return md
 
