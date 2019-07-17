@@ -42,3 +42,11 @@ print('Hello')
 md = h2md.convert(html)
 print(md)
 ```
+
+最时髦的用法：
+
+```bash
+curl -o- https://mydream.ink/archive/iaas-faas-serverless/ | h2md # 标准输出
+curl -o- https://mydream.ink/archive/iaas-faas-serverless/ | h2md > xx.md # 输出到 md 文件
+curl -o- https://mydream.ink/archive/iaas-faas-serverless/ | h2md >> xx.md # 追加到 md 文件
+```
