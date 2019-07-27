@@ -62,6 +62,7 @@ def convert(html):
     soup = bs(html, 'html.parser')
     container = soup.select_one('article .post-container') \
         or soup.select_one('article #content') \
+        or soup.select_one('.page-article .main-content') \
         or soup.select_one('article') \
         or soup.select_one('body') \
         or soup
